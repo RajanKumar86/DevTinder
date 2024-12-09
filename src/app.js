@@ -4,7 +4,7 @@ const connectDB = require("./config/database");
 
 const app = express();
 const PORT = 5000;
-const User = require("./config/model/model");
+const User = require("./model/model");
 
 app.get("/", (req, res) => {
   res.send("hello from the server 05 !!!");
