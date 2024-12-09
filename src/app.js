@@ -15,7 +15,6 @@ app.get("/signup", (req, res) => {
   res.send("this is Signup Page ");
 });
 
-
 app.post("/signup", async (req, res) => {
   console.log(req.body);
   const user = new User(req.body);
@@ -34,27 +33,33 @@ app.get("/user", async (req, res) => {
   try {
     const users = await User.find({ emailId: userEmail });
 
-    if(users.length === 0){
-      res.status(404).send("user not found")
-    } else{
+    if (users.length === 0) {
+      res.status(404).send("user not found");
+    } else {
       res.send(users);
     }
-
   } catch (err) {
     res.status(400).send("something went wrong" + err.message);
   }
 });
 
-app.get('/feed', async (req, res) => {
-  try{
+app.get("/feed", async (req, res) => {
+  try {
     const users = await User.find({});
     res.send(users);
+  } catch (err) {
+    res.status(404).send("something went wrong!!!");
   }
-  catch(err){
-    res.status(404).send("something went wrong!!!")
+});
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const user = await User.findByIdAndDelete({ _id: userId });
+    res.send("user deleted sucessfully!!");
+  } catch (err) {
+    res.status(404).send("something went wrong!!!");
   }
-})
-
+});
 
 connectDB()
   .then(() => {
