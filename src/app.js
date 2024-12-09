@@ -16,7 +16,7 @@ app.get("/signup", (req, res) => {
 });
 
 app.post("/signup", async (req, res) => {
-  console.log(req.body);
+  
   const user = new User(req.body);
 
   try {
