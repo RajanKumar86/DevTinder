@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,6 +15,11 @@ const userSchema = new mongoose.Schema(
       require: true,
       unique: true,
       trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("email is not correct");
+        }
+      },
     },
     password: {
       type: String,
@@ -25,14 +31,14 @@ const userSchema = new mongoose.Schema(
     gender: {
       type: String,
       validate(value) {
-        if (!["Male", "Female", "others"].includes(value)) {
+        if (!["Male", "Female", "Others"].includes(value)) {
           throw new Error("Gender Data is not correct! try again");
         }
       },
     },
     about: {
       type: String,
-      default: "This is the from default...",
+      default: "This is the about default...",
     },
     skills: {
       type: Array,

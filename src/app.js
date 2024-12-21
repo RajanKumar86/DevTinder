@@ -1,5 +1,4 @@
 const express = require("express");
-
 const connectDB = require("./config/database");
 
 const app = express();
@@ -8,36 +7,12 @@ const User = require("./model/model");
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("hello from the server 05 !!!");
-});
-app.get("/signup", (req, res) => {
-  res.send("this is Signup Page ");
-});
-
 app.post("/signup", async (req, res) => {
-  
-  const user = new User(req.body);
-
+  const userDetails = req.body;
+  const user = new User(userDetails);
   try {
     await user.save();
     res.send("user added succesfully...");
-  } catch (err) {
-    res.status(400).send("something went wrong" + err.message);
-  }
-});
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
-
-  try {
-    const users = await User.find({ emailId: userEmail });
-
-    if (users.length === 0) {
-      res.status(404).send("user not found");
-    } else {
-      res.send(users);
-    }
   } catch (err) {
     res.status(400).send("something went wrong" + err.message);
   }
@@ -51,6 +26,21 @@ app.get("/feed", async (req, res) => {
     res.status(404).send("something went wrong!!!");
   }
 });
+
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const users = await User.find({ emailId: userEmail });
+    if (users.length === 0) {
+      res.status(404).send("user not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("something went wrong" + err.message);
+  }
+});
+
 app.delete("/user", async (req, res) => {
   const userId = req.body.userId;
   try {
@@ -61,15 +51,33 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
 
   try {
+    const ALLOWED_UPDATES = [
+      "lastName",
+      "userId",
+      "gender",
+      "skills",
+      "age",
+      "emailId",
+    ];
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("updates not allowed");
+    }
+    if (data?.skills.length > 2) {
+      throw new Error("skills cannot be grater than 2 ");
+    }
+
     const user = await User.findByIdAndUpdate({ _id: userId }, data);
     res.send("user Updated suceesfully !!!");
   } catch (err) {
-    res.status(400).send("something went wrong" + err.message);
+    res.status(400).send("Update Failed : " + err.message);
   }
 });
 
