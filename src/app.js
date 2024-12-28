@@ -8,6 +8,7 @@ const validateSignUpdata = require("./utils/validation");
 const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
+
 const cookieParser = require("cookie-parser");
 const userAuth = require("./middlewares/auth");
 
@@ -39,16 +40,11 @@ app.post("/login", async (req, res) => {
     if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = user.valdiatePassword(password);
     if (isPasswordValid) {
-      const token = await jwt.sign({ _id: user._id }, "DevTinder$07", {
-        expiresIn: "1d",
-      });
-
+      const token = await user.getJWT();
       res.cookie("token", token);
       res.send("Login sucessfull !! ");
-    } else {
-      throw new Error("Invalid credentials");
     }
   } catch (err) {
     res.status(404).send("ERROR : " + err.message);
