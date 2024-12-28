@@ -1,21 +1,24 @@
 const express = require("express");
-const connectDB = require("./config/database");
-const bcrypt = require("bcrypt");
-
 const app = express();
 const PORT = 5000;
-const User = require("./model/model");
+const connectDB = require("./config/database");
+const User = require("./model/user");
+
 const validateSignUpdata = require("./utils/validation");
+const bcrypt = require("bcrypt");
+
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const userAuth = require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
     validateSignUpdata(req);
     const { firstName, lastName, emailId, password } = req.body;
     const passwordHash = await bcrypt.hash(password, 10);
-    console.log(passwordHash);
-    // const user = new User(req.body)
     const user = new User({
       firstName,
       lastName,
@@ -38,12 +41,38 @@ app.post("/login", async (req, res) => {
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
+      const token = await jwt.sign({ _id: user._id }, "DevTinder$07", {
+        expiresIn: "1d",
+      });
+
+      res.cookie("token", token);
       res.send("Login sucessfull !! ");
     } else {
       throw new Error("Invalid credentials");
     }
   } catch (err) {
     res.status(404).send("ERROR : " + err.message);
+  }
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.send(user);
+  } catch (err) {
+    res.status(404).send("something went wrong!!!" + err.message);
+  }
+});
+
+app.get("/connectionRequest", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    console.log("sending a connection request ! ");
+
+    res.send(user.firstName + " is sending the connection request!! ");
+  } catch (err) {
+    res.status(404).send("something went wrong!!!" + err.message);
   }
 });
 
