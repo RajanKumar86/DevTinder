@@ -9,20 +9,14 @@ const userAuth = async (req, res, next) => {
         throw new Error("Invalid Token ! please login Again !!!" )
       }
 
-    const decodedObj = await jwt.verify(token, "DevTinder$07");
-
+    const decodedObj = await jwt.verify(token, "DevTinder@2024");
     const { _id } = decodedObj;
-
     const user = await User.findById({ _id });
-
     if (!user) {
       throw new Error("user not found!!");
     }
-
     req.user = user;
-    next();
-
-    
+    next();    
   } catch (err) {
     res.status(400).send("ERROR: " + err.message);
   }
